@@ -1,1 +1,1 @@
-export const mongoUrl = 'mongodb://mongo:27017';
+export const mongoUrl = 'mongodb://localhost:27017';

@@ -1,8 +1,9 @@
-import { Length, IsEmail, IsString, IsNotEmpty } from 'class-validator';
+import { Length, IsEmail, IsString, IsNotEmpty, IsOptional } from 'class-validator';
 import { Entity } from './Entity';
 
 export class User extends Entity {
     @IsString() @IsEmail() email: string;
+    @IsOptional() @IsString() password: string;
 
     constructor(user: Partial<User>) {
         super(user);
