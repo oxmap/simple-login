@@ -1,3 +1,5 @@
-<div class="container">
-  <h2>Details page</h2>
-</div>
+<mat-card>{{(user$ | async).name}}</mat-card>
+<mat-card>{{(user$ | async).email}}</mat-card>
+<mat-card>
+  <img [src]="(user$ | async).imageUrl" alt="Profile photo">
+</mat-card>
