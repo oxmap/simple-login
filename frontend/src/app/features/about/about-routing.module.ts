@@ -8,7 +8,7 @@ const routes: Routes = [
   {
     path: 'about',
     component: AboutComponent,
-    canLoad: [LoggedGuard]
+    canActivate: [LoggedGuard]
   },
 ];
 

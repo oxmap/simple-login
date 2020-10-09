@@ -1,51 +1,26 @@
 import { Injectable } from '@angular/core';
-import { Router, CanLoad, Route } from '@angular/router';
-import { AboutState } from '@app/features/about/states/about.state';
+import { Router, CanActivate, ActivatedRouteSnapshot } from '@angular/router';
+import { AboutState, User } from '@app/features/about/states/about.state';
 import { Select } from '@ngxs/store';
 import { Observable } from 'rxjs';
-import { map, tap } from 'rxjs/operators';
-
+import { map } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root',
 })
-export class LoggedGuard implements CanLoad {
-  @Select(AboutState) user$: Observable<boolean>;
+export class LoggedGuard implements CanActivate {
+  @Select(AboutState) user$: Observable<User>;
   constructor( private readonly router: Router) {}
 
-  /**
-   * Возможен ли переход по адресу
-   * @return boolean
-   */
-  public canLoad(route: Route): boolean | Observable<boolean> {
-    // @Select(AboutState) user$: Observable<any>;
+  public canActivate(next: ActivatedRouteSnapshot): boolean | Observable<boolean> {
     return this.user$.pipe(
-      map((res) => {
-        console.log(res);
-        return res
-      }));
-    // .pipe(map(res) => {
-    //   console.log(res)
-    //   return res;
-    // });
+      map((user) => {
+        const res = !!user.name && !!user.email && !!user.imageUrl;
+        if (!res) {
+          this.router.navigate(['/login']);
+        }
 
-
-    // this.router.navigateByUrl(`/login`);
-  //  return false;
-    // const isLogin = route.path === APP_ROUTE.PATH.LOGIN;
-    // if (this.settingsService.loggedIn) {
-    //   if (isLogin) {
-    //     this.router.navigateByUrl(`/${APP_ROUTE.PATH.SUGGESTIONS}`);
-    //     return false;
-    //   }
-    //   return true;
-    // } else {
-    //   if (isLogin) {
-    //     return true;
-    //   }
-    //   this.router.navigateByUrl(`/${APP_ROUTE.PATH.LOGIN}`);
-
-    //   return false;
-    // }
+        return true;
+      }))
   }
 }

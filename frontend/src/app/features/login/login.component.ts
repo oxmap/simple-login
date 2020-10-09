@@ -22,7 +22,6 @@ export class LoginComponent {
 
   private signInSuccessHandler(res: GoogleUser) {
     this.ngZone.run(() => {
-        console.log(res);
         const profile = res.getBasicProfile();
         this.store.dispatch(new User(profile.getName(), profile.getGivenName(), profile.getFamilyName(), profile.getImageUrl(), profile.getEmail()));
         this.router.navigate(['./about']);

@@ -26,7 +26,6 @@ export class AboutState {
   @Action(User)
   setUser({ getState, setState }, { name, givenName, familyName, imageUrl, email }: User) {
     const state = getState();
-    console.log(state);
     setState({
       ...state,
       name,
