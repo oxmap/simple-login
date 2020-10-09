@@ -51,10 +51,10 @@ async function bootstrap() {
 
     if (process.env.NODE_ENV !== 'production') {
       const options = new DocumentBuilder()
-        .setTitle('Cats example')
-        .setDescription('The cats API description')
+        .setTitle('Simple logi API')
+        .setDescription('Description')
         .setVersion('1.0')
-        .addTag('cats')
+        .addTag('simple-login')
         .build();
 
       const document = SwaggerModule.createDocument(app, options);
