@@ -2,3 +2,5 @@
 
 ## How to run
 * Run `npm install`
+* Back `npm run start-server`
+* Front `npm run serve-client`
