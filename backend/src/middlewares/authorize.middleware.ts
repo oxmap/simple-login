@@ -1,16 +1,22 @@
-import { Injectable, NestInterceptor, ExecutionContext, CallHandler, ForbiddenException } from '@nestjs/common';
+import { NestMiddleware, Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config/dist';
+import * as jwt from 'jsonwebtoken';
 import { UserService } from '../services/user.service';
 
 @Injectable()
-export class AuthorizeInterceptor implements NestInterceptor {
-    constructor(private userService: UserService) {}
-    async intercept(context: ExecutionContext, next: CallHandler) {
-        const user = await this.userService.getUserAuthenticated(context.getArgs()[0].cookies.t);
-        if (!user) {
-            throw new ForbiddenException();
-        }
+export class AuthMiddleware implements NestMiddleware {
+  constructor(private readonly userService: UserService, private configService: ConfigService) {}
 
-        context.getArgs()[0].user = user;
-        return next.handle();
+  async use(req: any, res: any, next: () => void) {
+    const authHeaders = req.headers.authorization;
+    if (authHeaders && (authHeaders as string).split(' ')[1]) {
+
+      const token = (authHeaders as string).split(' ')[1];
+      const decoded: any = jwt.verify(token, this.configService.get<string>('JWT_SECRET'));
+      const user = await this.userService.getUserAuthenticated(decoded.id);
+
+      if (user) { req.user = user; }
     }
+    next();
+  }
 }

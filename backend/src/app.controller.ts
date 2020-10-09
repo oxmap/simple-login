@@ -1,9 +1,7 @@
 import { Controller, Post, Get, Body, UseInterceptors, HttpCode } from '@nestjs/common';
 import { LoginRequest, SigninRequest, User } from 'models';
 import { UserService } from 'services/user.service';
-import { LoginInterceptor, GetUserAuthenticatedInterceptor } from 'middlewares/login.middleware';
 import { ReqUser } from 'decorators/user.decorator';
-import { AuthorizeInterceptor } from 'middlewares/authorize.middleware';
 
 @Controller('')
 export class AppController {
@@ -21,7 +19,6 @@ export class AppController {
   }
 
   @Get('me')
-  @UseInterceptors(AuthorizeInterceptor)
   async getUserAuthenticated(@ReqUser() user: User): Promise<User> {
       return user;
   }

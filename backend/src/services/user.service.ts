@@ -1,9 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, Injectable } from '@nestjs/common';
 import { SigninRequest, User } from 'models';
 import { Repository, RepositoryFactory } from 'mongo-nest';
 import { compare } from 'bcryptjs';
-import * as NodeCache from 'node-cache';
-import { cryptPassword, getRandomToken } from 'utils';
+import * as jwt from 'jsonwebtoken';
+import { cryptPassword } from 'utils';
+import { ConfigService } from '@nestjs/config';
 
 const comparePassword = (plainPass, hashword) => {
     return compare(plainPass, hashword);
@@ -12,10 +13,8 @@ const comparePassword = (plainPass, hashword) => {
 @Injectable()
 export class UserService{
     userRepo: Repository<User>;
-    // remove object after 10 minute
-    private cache = new NodeCache({ stdTTL: 60 * 60 * 12 });
 
-    constructor(private repositoryFactory: RepositoryFactory) {
+    constructor(private repositoryFactory: RepositoryFactory, private configService: ConfigService) {
         this.userRepo = this.repositoryFactory.getRepository<User>(User, 'users');
     }
 
@@ -37,50 +36,46 @@ export class UserService{
             }),
         );
         if (!user.password || !(await comparePassword(password, user.password))) {
-            return null;
+          throw new HttpException({}, 401);
         }
-        let token = this.cache.get<string>(user.email);
-        if (!token) {
-          await this.saveUserToken(user.email);
-          token = this.cache.get<string>(user.email)
-        }
-        return token;
+
+        return this.generateToken(user);
     }
 
-    async saveUser(user: SigninRequest): Promise<{ ok: number }> {
-        user.password = await cryptPassword(user.password);
-        delete user.rePassword;
-        const userDb = await this.userRepo.saveOrUpdateOne(user);
-        await this.saveUserToken(user.email);
-        return (userDb).result;
-    }
 
     async getUserAuthenticated(id): Promise<User> {
         if (!id) {
             return undefined;
         }
-        const foundUser = this.cache.get<User>(id);
+        const foundUser  = new User(
+          await this.userRepo.collection.findOne({
+              id,
+          }),
+      );
         if (!foundUser) {
             return undefined;
         }
 
-        setTimeout(() => this.cache.set(foundUser._id.toString(), foundUser));
         return foundUser;
     }
 
-    async getUsers(query: Partial<User>) {
-        return this.userRepo.collection
-            .find<User>(query)
-            .project({ password: 0 })
-            .toArray();
+    private async saveUser(user: SigninRequest): Promise<{ ok: number }> {
+      user.password = await cryptPassword(user.password);
+      delete user.rePassword;
+      const userDb = await this.userRepo.saveOrUpdateOne(user);
+      return (userDb).result;
     }
 
-    async saveUserToken(id) {
-        const token = await getRandomToken();
-        this.cache.set(id, token);
-    }
+    private generateToken(user) {
+      const today = new Date();
+      const exp = new Date(today);
+      exp.setDate(today.getDate() + 60);
 
-    logout(user: User) {
-        setTimeout(() => this.cache.del(user._id.toString()));
+      return jwt.sign({
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        exp: exp.getTime() / 1000,
+      }, this.configService.get<string>('JWT_SECRET'));
     }
 }
