@@ -55,6 +55,10 @@ async function bootstrap() {
         .setDescription('Description')
         .setVersion('1.0')
         .addTag('simple-login')
+        .addBearerAuth(
+          { type: 'http', scheme: 'bearer', bearerFormat: 'JWT' },
+          'access-token',
+        )
         .build();
 
       const document = SwaggerModule.createDocument(app, options);

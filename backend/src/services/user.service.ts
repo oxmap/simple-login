@@ -43,15 +43,16 @@ export class UserService{
     }
 
 
-    async getUserAuthenticated(id): Promise<User> {
-        if (!id) {
+    async getUserAuthenticated(email): Promise<User> {
+        if (!email) {
             return undefined;
         }
-        const foundUser  = new User(
+        const foundUser = new User(
           await this.userRepo.collection.findOne({
-              id,
+              email,
           }),
-      );
+        );
+
         if (!foundUser) {
             return undefined;
         }
@@ -61,8 +62,8 @@ export class UserService{
 
     private async saveUser(user: SigninRequest): Promise<{ ok: number }> {
       user.password = await cryptPassword(user.password);
-      delete user.rePassword;
-      const userDb = await this.userRepo.saveOrUpdateOne(user);
+      const { rePassword, ...userForDb } = user;
+      const userDb = await this.userRepo.saveOrUpdateOne(userForDb);
       return (userDb).result;
     }
 
