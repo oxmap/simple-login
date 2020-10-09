@@ -1,0 +1,19 @@
+@import '~@angular/material/theming';
+
+$custom-typography: mat-typography-config(
+  $font-family: 'Open Sans, Arial, sans-serif'
+);
+
+@include mat-core($custom-typography);
+
+@import './themes/default-theme';
+
+.app-default-theme {
+  @include angular-material-theme($app-default-theme);
+  @include mat-toolbar-theme($app-default-toolbar-theme);
+}
+
+body {
+  margin: 0;
+  font-family: Roboto, 'Helvetica Neue', 'sans-serif';
+}
