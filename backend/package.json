@@ -1,0 +1,50 @@
+{
+    "name": "simple-login-server",
+    "version": "0.0.0",
+    "description": "description",
+    "author": "",
+    "license": "MIT",
+    "scripts": {
+        "build": "tsc -p tsconfig.build.json",
+        "start": "ts-node -r tsconfig-paths/register src/main.ts",
+        "start:dev": "nodemon",
+        "start:debug": "nodemon --config nodemon-debug.json",
+        "prestart:prod": "rimraf dist && npm run build",
+        "start:prod": "node node -r ./tsconfig-paths-bootstrap.js ./dist/nest-angular/server/src/main.js",
+        "lint": "tslint -p tsconfig.json -c tslint.json --fix"
+    },
+    "dependencies": {
+        "@nest-middlewares/compression": "^6.0.0",
+        "@nestjs/common": "^7.4.4",
+        "@nestjs/config": "^0.5.0",
+        "@nestjs/core": "^7.4.4",
+        "@nestjs/platform-fastify": "^7.4.4",
+        "@types/bcryptjs": "^2.4.2",
+        "bcryptjs": "^2.4.3",
+        "fastify-cookie": "^3.0.2",
+        "fastify-cors": "^2.1.2",
+        "fastify-static": "^2.4.0",
+        "jsonwebtoken": "^8.5.1",
+        "module-alias": "^2.2.0",
+        "mongo-nest": "^1.0.0",
+        "mongodb": "^3.1.13",
+        "mongodb-backup": "^1.6.9",
+        "mongodb-restore": "^1.6.2",
+        "reflect-metadata": "^0.1.12",
+        "rxjs": "^6.3.3"
+    },
+    "devDependencies": {
+        "@nestjs/swagger": "^4.6.1",
+        "@types/express": "^4.16.0",
+        "@types/mongodb": "^3.1.19",
+        "@types/node": "^10.12.18",
+        "@types/passport-local": "^1.0.33",
+        "fastify-swagger": "^3.4.0",
+        "nodemon": "^1.18.9",
+        "prettier": "^1.17.1",
+        "ts-node": "^7.0.1",
+        "tsconfig-paths": "^3.7.0",
+        "tslint": "5.12.1",
+        "typescript": "^3.2.4"
+    }
+}
