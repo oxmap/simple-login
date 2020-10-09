@@ -1,24 +1,33 @@
 import { Injectable } from '@nestjs/common';
-import { User } from 'shared';
+import { SigninRequest, User } from 'models';
 import { Repository, RepositoryFactory } from 'mongo-nest';
 import { compare } from 'bcryptjs';
 import * as NodeCache from 'node-cache';
-
-// const generateToken = (): Promise<string> =>
-//     new Promise(resolve => randomBytes(48, (err, buffer) => resolve(buffer.toString('hex'))));
+import { cryptPassword, getRandomToken } from 'utils';
 
 const comparePassword = (plainPass, hashword) => {
     return compare(plainPass, hashword);
 };
 
 @Injectable()
-export class UserService {
+export class UserService{
     userRepo: Repository<User>;
     // remove object after 10 minute
     private cache = new NodeCache({ stdTTL: 60 * 60 * 12 });
 
     constructor(private repositoryFactory: RepositoryFactory) {
         this.userRepo = this.repositoryFactory.getRepository<User>(User, 'users');
+    }
+
+    async addUser(userCred: SigninRequest) {
+      const existUser = await this.userRepo.findOne({ email: userCred.email });
+
+      const result = (await this.saveUser(userCred)) as any;
+      if (!existUser) {
+          const token = await getRandomToken();
+          this.saveUserToken(userCred.email, token);
+      }
+      return result;
     }
 
     async validateUser(email, password) {
@@ -36,7 +45,8 @@ export class UserService {
         return user;
     }
 
-    async saveUser(user: User): Promise<{ ok: number }> {
+    async saveUser(user: SigninRequest): Promise<{ ok: number }> {
+        user.password = await cryptPassword('123456');
         return (await this.userRepo.saveOrUpdateOne(user)).result;
     }
 

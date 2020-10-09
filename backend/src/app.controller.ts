@@ -1,5 +1,5 @@
-import { Controller, Post, Get, Body, UseInterceptors } from '@nestjs/common';
-import { LoginRequest, User } from 'shared';
+import { Controller, Post, Get, Body, UseInterceptors, HttpCode } from '@nestjs/common';
+import { LoginRequest, SigninRequest, User } from 'models';
 import { UserService } from 'services/user.service';
 import { LoginInterceptor, GetUserAuthenticatedInterceptor } from 'middlewares/login.middleware';
 import { ReqUser } from 'decorators/user.decorator';
@@ -9,20 +9,19 @@ import { AuthorizeInterceptor } from 'middlewares/authorize.middleware';
 export class AppController {
   constructor(private readonly authService: UserService) {}
 
+  @Post('signup')
+  async signup(@Body() user: SigninRequest): Promise<{ status: number }> {
+      return this.authService.addUser(user) as any;
+  }
+
   @Post('signin')
-  @UseInterceptors(LoginInterceptor)
+  @HttpCode(200)
   async signin(@Body() user: LoginRequest): Promise<{ status: number }> {
       return this.authService.validateUser(user.email, user.password) as any;
   }
 
-  @Post('signup')
+  @Get('me')
   @UseInterceptors(AuthorizeInterceptor)
-  async signup(@ReqUser() user: User): Promise<{ status: number }> {
-      return this.authService.logout(user) as any;
-  }
-
-  @UseInterceptors(GetUserAuthenticatedInterceptor)
-  @Get('getUserAuthenticated')
   async getUserAuthenticated(@ReqUser() user: User): Promise<User> {
       return user;
   }
