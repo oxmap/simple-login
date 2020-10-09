@@ -1,6 +1,8 @@
 import { Component, ChangeDetectionStrategy, NgZone } from '@angular/core';
 import { Router } from '@angular/router';
+import { Store } from '@ngxs/store';
 import { GoogleAuthService } from 'ng-gapi';
+import { User } from '../about/states/about.state';
 import GoogleUser = gapi.auth2.GoogleUser;
 
 @Component({
@@ -10,9 +12,7 @@ import GoogleUser = gapi.auth2.GoogleUser;
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class LoginComponent {
-  private user: GoogleUser = undefined;
-
-  constructor(private googleAuthService: GoogleAuthService, private ngZone: NgZone, private router: Router) { }
+  constructor(private store: Store, private googleAuthService: GoogleAuthService, private ngZone: NgZone, private router: Router) { }
 
   public signIn() {
     this.googleAuthService.getAuth().subscribe((auth) => {
@@ -22,14 +22,15 @@ export class LoginComponent {
 
   private signInSuccessHandler(res: GoogleUser) {
     this.ngZone.run(() => {
-        this.user = res;
         console.log(res);
+        const profile = res.getBasicProfile();
+        this.store.dispatch(new User(profile.getName(), profile.getGivenName(), profile.getFamilyName(), profile.getImageUrl(), profile.getEmail()));
         this.router.navigate(['./about']);
     });
-}
+  }
 
-private signInErrorHandler(err) {
-    console.warn(err);
-}
+  private signInErrorHandler(err) {
+      console.warn(err);
+  }
 
 }
