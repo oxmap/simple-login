@@ -23,7 +23,6 @@ export class AppController {
   @Get('me')
   @ApiSecurity('access-token')
   async getUserAuthenticated(@Req() req): Promise<User> {
-      const { password, ...user } = req.raw.user;
-      return user;
+      return req.raw.user.toClient();
   }
 }

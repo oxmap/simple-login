@@ -13,9 +13,15 @@ export abstract class Entity {
     get id() {
         return this._id ? this._id.toString() : undefined;
     }
+
     constructor(data?) {
         if (data) {
             Object.assign(this, data);
         }
+    }
+
+    toClient() {
+      const { _id, ...user } = this;
+      return {...user, id: this._id};
     }
 }

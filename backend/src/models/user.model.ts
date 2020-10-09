@@ -10,6 +10,11 @@ export class User extends Entity {
     constructor(user: Partial<User>) {
         super(user);
     }
+
+    toClient() {
+      const { password, ...user } = super.toClient();
+      return user as any;
+    }
 }
 
 export class LoginRequest {
