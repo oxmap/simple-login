@@ -13,9 +13,6 @@ export abstract class Entity {
     get id() {
         return this._id ? this._id.toString() : undefined;
     }
-    get isNew() {
-        return !this.id;
-    }
     constructor(data?) {
         if (data) {
             Object.assign(this, data);

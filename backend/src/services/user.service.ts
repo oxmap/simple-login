@@ -22,11 +22,11 @@ export class UserService{
     async addUser(userCred: SigninRequest) {
       const existUser = await this.userRepo.findOne({ email: userCred.email });
 
-      const result = (await this.saveUser(userCred)) as any;
+      let result = null;
       if (!existUser) {
-          const token = await getRandomToken();
-          this.saveUserToken(userCred.email, token);
+        result = (await this.saveUser(userCred)) as any;
       }
+
       return result;
     }
 
@@ -39,15 +39,20 @@ export class UserService{
         if (!user.password || !(await comparePassword(password, user.password))) {
             return null;
         }
-        delete user.password;
-        // TODO use token instead of id.
-        setTimeout(() => this.cache.set(user._id.toString(), user));
-        return user;
+        let token = this.cache.get<string>(user.email);
+        if (!token) {
+          await this.saveUserToken(user.email);
+          token = this.cache.get<string>(user.email)
+        }
+        return token;
     }
 
     async saveUser(user: SigninRequest): Promise<{ ok: number }> {
-        user.password = await cryptPassword('123456');
-        return (await this.userRepo.saveOrUpdateOne(user)).result;
+        user.password = await cryptPassword(user.password);
+        delete user.rePassword;
+        const userDb = await this.userRepo.saveOrUpdateOne(user);
+        await this.saveUserToken(user.email);
+        return (userDb).result;
     }
 
     async getUserAuthenticated(id): Promise<User> {
@@ -70,8 +75,9 @@ export class UserService{
             .toArray();
     }
 
-    saveUserToken(email: string, token: string) {
-        this.cache.set(email, token);
+    async saveUserToken(id) {
+        const token = await getRandomToken();
+        this.cache.set(id, token);
     }
 
     logout(user: User) {
